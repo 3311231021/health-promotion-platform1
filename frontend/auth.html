@@ -1,1 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ProFit Health｜登入 / 註冊</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: 420px;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.10);
+      padding: 26px 26px 22px;
+    }
+
+    .logo {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .logo img {
+      width: 160px;
+      height: auto;
+      display: block;
+    }
+
+    .tabs {
+      display: flex;
+      background: #eef2f7;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 6px 0 18px;
+    }
+    .tabs button {
+      flex: 1;
+      padding: 12px 10px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 700;
+      color: #23314a;
+    }
+    .tabs button.active {
+      background: #0d6efd;
+      color: #fff;
+    }
+
+    form { width: 100%; display: none; }
+    form.active { display: block; }
+
+    .field { margin-bottom: 12px; text-align: left; }
+    .field label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: #334155;
+      font-weight: 700;
+    }
+    input {
+      width: 100%;
+      padding: 12px 12px;
+      border: 1px solid #d0d7e2;
+      border-radius: 10px;
+      outline: none;
+      font-size: 14px;
+      background: #fff;
+    }
+    input:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 3px rgba(13,110,253,.12);
+    }
+
+    .submit {
+      width: 100%;
+      padding: 12px 12px;
+      margin-top: 6px;
+      background: #0d6efd;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .submit:hover { opacity: .95; }
+
+    .hint {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+
+    <div class="logo">
+      <img src="logo.png" alt="ProFit Health Logo">
+    </div>
+
+    <div class="tabs">
+      <button id="loginTab" class="active" type="button">登入</button>
+      <button id="registerTab" type="button">註冊</button>
+    </div>
+
+    <!-- Login -->
+    <form id="loginForm" class="active">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" required placeholder="請輸入 Email">
+      </div>
+
+      <div class="field">
+        <label>密碼</label>
+        <input type="password" id="loginPassword" required placeholder="請輸入密碼">
+      </div>
+
+      <button class="submit" type="submit">登入</button>
+      <div class="hint">登入成功後會依角色自動導向對應的 Dashboard。</div>
+    </form>
+
+    <!-- Register -->
+    <form id="registerForm">
+      <div class="field">
+        <label>使用者名稱</label>
+        <input type="text" id="regUsername" required placeholder="例如：Nancy">
+      </div>
+
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="regEmail" required placeholder="請輸入 Email">
+      </div>
+
+      <div class="field">
+        <label>密碼</label>
+        <input type="password" id="regPassword" required placeholder="請輸入密碼">
+      </div>
+
+      <button class="submit" type="submit">註冊</button>
+      <div class="hint">註冊成功後會自動切回登入。</div>
+    </form>
+
+  </div>
+
+<script>
+const API_BASE = "http://localhost:3000";
+
+// ===== 若已登入，直接導向對應 Dashboard =====
+(async function autoRedirectIfLoggedIn() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/me`, {
+      headers: { Authorization: "Bearer " + token }
+    });
+    const me = await res.json();
+    if (!res.ok) return;
+
+    if (me.role === "admin") location.href = "admin_dashboard.html";
+    else if (me.role === "expert") location.href = "expert_dashboard.html";
+    else location.href = "dashboard.html";
+  } catch {}
+})();
+
+// ===== Tabs =====
+const loginTab = document.getElementById("loginTab");
+const registerTab = document.getElementById("registerTab");
+const loginForm = document.getElementById("loginForm");
+const registerForm = document.getElementById("registerForm");
+
+loginTab.onclick = () => {
+  loginTab.classList.add("active");
+  registerTab.classList.remove("active");
+  loginForm.classList.add("active");
+  registerForm.classList.remove("active");
+};
+
+registerTab.onclick = () => {
+  registerTab.classList.add("active");
+  loginTab.classList.remove("active");
+  registerForm.classList.add("active");
+  loginForm.classList.remove("active");
+};
+
+// ===== Login =====
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const email = loginEmail.value.trim();
+  const password = loginPassword.value;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+    if (!res.ok) return alert(data.message || "登入失敗");
+
+    localStorage.setItem("token", data.token);
+
+    const meRes = await fetch(`${API_BASE}/api/me`, {
+      headers: { Authorization: "Bearer " + data.token }
+    });
+    const me = await meRes.json();
+    if (!meRes.ok) throw new Error();
+
+    if (me.role === "admin") location.href = "admin_dashboard.html";
+    else if (me.role === "expert") location.href = "expert_dashboard.html";
+    else location.href = "dashboard.html";
+  } catch {
+    alert("登入流程失敗，請稍後再試");
+    localStorage.removeItem("token");
+  }
+});
+
+// ===== Register =====
+registerForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const payload = {
+    username: regUsername.value.trim(),
+    email: regEmail.value.trim(),
+    password: regPassword.value
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/api/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    alert(data.message || (res.ok ? "註冊成功" : "註冊失敗"));
+    if (res.ok) loginTab.click();
+  } catch {
+    alert("無法連線伺服器");
+  }
+});
+</script>
+</body>
+</html>
 

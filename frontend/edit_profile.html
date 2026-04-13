@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>修改資料</title>
+</head>
+<body>
+
+<h2>修改顯示名稱</h2>
+
+<input type="text" id="username" placeholder="新的顯示名稱"><br><br>
+<button id="saveBtn">儲存變更</button><br><br>
+
+<button onclick="window.location.href='dashboard.html'">回首頁</button>
+
+<script>
+document.getElementById("saveBtn").onclick = async () => {
+    const username = document.getElementById("username").value;
+    const token = localStorage.getItem("token");
+
+    if (!username) {
+        return alert("請輸入顯示名稱");
+    }
+
+    const res = await fetch("http://localhost:3000/api/me", {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({ username })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+
+    if (res.ok) {
+        window.location.href = "member.html";
+    }
+};
+</script>
+
+</body>
+</html>

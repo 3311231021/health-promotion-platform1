@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ProFit Health｜管理員 Dashboard</title>
+
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Arial, sans-serif; background:#f4f7fb; color:#111827; }
+    .topbar{
+      background:#fff; border-bottom:1px solid #e5e7eb;
+      padding:14px 18px; display:flex; align-items:center; justify-content:space-between;
+    }
+    .brand h1{ margin:0; font-size:22px; font-weight:900; }
+    .brand small{ display:block; margin-top:4px; color:#6b7280; font-weight:700; }
+    .actions{ display:flex; gap:10px; }
+    button{
+      border:none; border-radius:12px; padding:10px 14px; cursor:pointer;
+      font-weight:900;
+    }
+    button.primary{ background:#f59e0b; color:#111827; }
+    button.secondary{ background:#eef2f7; color:#111827; }
+    button.danger{ background:#111827; color:#fff; }
+    button:hover{ opacity:.95; }
+
+    .wrap{ max-width: 1100px; margin:18px auto; padding:0 16px 28px; }
+    .grid{ display:grid; grid-template-columns: repeat(12, 1fr); gap:14px; }
+    .card{
+      background:#fff; border-radius:16px; box-shadow:0 10px 28px rgba(0,0,0,.08);
+      padding:16px; margin-top:14px;
+    }
+    .full{ grid-column: span 12; }
+    @media (min-width: 920px){
+      .left{ grid-column: span 5; }
+      .right{ grid-column: span 7; }
+    }
+
+    .sectionTitle{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+    .sectionTitle h2{ margin:0; font-size:16px; font-weight:900; }
+    .pill{
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      background:#eef2f7; color:#111827; font-weight:900;
+    }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; }
+    .field{ flex: 1; min-width: 180px; }
+    label{ display:block; font-size:12px; color:#6b7280; font-weight:900; margin-bottom:6px; }
+    select, input{
+      width:100%; padding:12px; border:1px solid #d1d5db; border-radius:12px;
+      outline:none; font-size:14px; background:#fff;
+    }
+    select:focus, input:focus{
+      border-color:#f59e0b; box-shadow:0 0 0 3px rgba(245,158,11,.15);
+    }
+
+    table{ width:100%; border-collapse: collapse; margin-top:8px; }
+    th, td{ text-align:left; padding:10px 8px; border-bottom:1px solid #e5e7eb; font-size:14px; }
+    th{ font-size:13px; color:#374151; font-weight:900; }
+    .muted{ color:#6b7280; font-weight:800; font-size:13px; }
+    .err{ margin-top:10px; color:#b91c1c; font-weight:900; white-space:pre-wrap; }
+    a.link{ color:#0d6efd; text-decoration:none; font-weight:900; }
+    a.link:hover{ text-decoration:underline; }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <h1>管理員 Dashboard</h1>
+      <small id="subTitle">載入中…</small>
+    </div>
+
+    <div class="actions">
+      <button class="secondary" id="btnManageExperts" type="button">專家資料維護</button>
+      <button class="secondary" id="btnRefresh" type="button">重新整理</button>
+      <button class="danger" id="btnLogout" type="button">登出</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="grid">
+
+      <!-- Quick Assign -->
+      <div class="card left full">
+        <div class="sectionTitle">
+          <h2>建立 / 更新指派（快速）</h2>
+          <span class="pill" id="assignPill">ready</span>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>選擇學員（role=user）</label>
+            <select id="clientSelect"></select>
+          </div>
+
+          <div class="field">
+            <label>選擇專家（role=expert）</label>
+            <select id="expertSelect"></select>
+          </div>
+
+          <div class="field" style="min-width:140px; flex:0 0 140px;">
+            <label>狀態</label>
+            <select id="statusSelect">
+              <option value="active">active</option>
+              <option value="ended">ended</option>
+            </select>
+          </div>
+
+          <div class="field" style="min-width:120px; flex:0 0 120px;">
+            <label>&nbsp;</label>
+            <button class="primary" id="btnAssign" type="button" style="width:100%;">送出</button>
+          </div>
+        </div>
+
+        <div class="muted" style="margin-top:10px;">
+          這裡是「單筆快速指派」。如果你要「學員 1 對多位專家」一次勾選，建議我也可以再幫你加一個 bulk 多選區塊（用 /api/admin/assignments/bulk）。
+        </div>
+
+        <div class="err" id="errBox"></div>
+      </div>
+
+      <!-- Experts Table -->
+      <div class="card right full">
+        <div class="sectionTitle">
+          <h2>專家清單</h2>
+          <span class="pill" id="expertCount">0 位</span>
+        </div>
+
+        <div class="muted">
+          specialty/title 若顯示「-」，代表該 expert 缺少 expert_profiles（請到「專家資料維護」用新增流程建立）。
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>expert_user_id</th>
+              <th>username</th>
+              <th>email</th>
+              <th>specialty</th>
+              <th>title</th>
+            </tr>
+          </thead>
+          <tbody id="expertTbody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:3000";
+
+    const subTitle = document.getElementById("subTitle");
+    const errBox = document.getElementById("errBox");
+    const assignPill = document.getElementById("assignPill");
+
+    const clientSelect = document.getElementById("clientSelect");
+    const expertSelect = document.getElementById("expertSelect");
+    const statusSelect = document.getElementById("statusSelect");
+
+    const expertTbody = document.getElementById("expertTbody");
+    const expertCount = document.getElementById("expertCount");
+
+    function setErr(msg){ errBox.textContent = msg || ""; }
+    function getToken(){ return localStorage.getItem("token"); }
+
+    async function apiFetch(path, options = {}) {
+      const token = getToken();
+      const res = await fetch(API_BASE + path, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...(options.headers || {}),
+          "Authorization": "Bearer " + token
+        }
+      });
+      const data = await res.json().catch(()=> ({}));
+      return { ok: res.ok, status: res.status, data };
+    }
+
+    async function guardAdmin(){
+      const token = getToken();
+      if (!token) return location.href = "auth.html";
+
+      const meRes = await fetch(API_BASE + "/api/me", {
+        headers: { Authorization: "Bearer " + token }
+      });
+      const me = await meRes.json().catch(()=> ({}));
+
+      if (!meRes.ok) {
+        localStorage.removeItem("token");
+        return location.href = "auth.html";
+      }
+
+      if (me.role !== "admin") {
+        if (me.role === "expert") location.href = "expert_dashboard.html";
+        else location.href = "dashboard.html";
+        return;
+      }
+
+      subTitle.textContent = `管理員：${me.username}（${me.email}）`;
+    }
+
+    function renderExperts(rows){
+      expertCount.textContent = `${rows.length} 位`;
+      expertTbody.innerHTML = rows.map(r => `
+        <tr>
+          <td>${r.expert_user_id}</td>
+          <td>${escapeHtml(r.username || "-")}</td>
+          <td>${escapeHtml(r.email || "-")}</td>
+          <td>${escapeHtml(r.specialty || "-")}</td>
+          <td>${escapeHtml(r.title || "-")}</td>
+        </tr>
+      `).join("");
+
+      // 下拉
+      expertSelect.innerHTML = rows.map(r => {
+        const label = r.title ? `${r.title}/${r.username} (${r.expert_user_id})` : `${r.username} (${r.expert_user_id})`;
+        return `<option value="${r.expert_user_id}">${escapeHtml(label)}</option>`;
+      }).join("");
+    }
+
+    function renderClients(rows){
+      clientSelect.innerHTML = rows.map(r => {
+        const label = `${r.username} (${r.client_user_id})`;
+        return `<option value="${r.client_user_id}">${escapeHtml(label)}</option>`;
+      }).join("");
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    async function loadExperts(){
+      const r = await apiFetch("/api/admin/experts");
+      if (!r.ok) throw new Error(r.data?.message || "讀取專家清單失敗");
+      renderExperts(Array.isArray(r.data) ? r.data : []);
+    }
+
+    async function loadClients(){
+      const r = await apiFetch("/api/admin/clients");
+      if (!r.ok) throw new Error(r.data?.message || "讀取學員清單失敗");
+      renderClients(Array.isArray(r.data) ? r.data : []);
+    }
+
+    async function loadAll(){
+      setErr("");
+      assignPill.textContent = "loading...";
+      try{
+        await Promise.all([loadExperts(), loadClients()]);
+        assignPill.textContent = "ready";
+      }catch(e){
+        assignPill.textContent = "error";
+        setErr(String(e.message || e));
+      }
+    }
+
+    async function submitAssign(){
+      setErr("");
+      const expert_user_id = Number(expertSelect.value);
+      const client_user_id = Number(clientSelect.value);
+      const status = statusSelect.value;
+
+      if (!expert_user_id || !client_user_id) {
+        return setErr("請選擇學員與專家");
+      }
+
+      assignPill.textContent = "sending...";
+      const r = await apiFetch("/api/admin/assignments", {
+        method: "POST",
+        body: JSON.stringify({ expert_user_id, client_user_id, status })
+      });
+
+      if (!r.ok) {
+        assignPill.textContent = "error";
+        return setErr(`${r.data?.message || "指派失敗"}\n${r.data?.error || ""}`);
+      }
+
+      assignPill.textContent = "done";
+      alert("指派已更新");
+    }
+
+    document.getElementById("btnLogout").addEventListener("click", () => {
+      localStorage.removeItem("token");
+      location.href = "auth.html";
+    });
+    document.getElementById("btnRefresh").addEventListener("click", loadAll);
+    document.getElementById("btnManageExperts").addEventListener("click", () => {
+      location.href = "admin.html";
+    });
+    document.getElementById("btnAssign").addEventListener("click", submitAssign);
+
+    (async function init(){
+      await guardAdmin();
+      await loadAll();
+    })();
+  </script>
+</body>
+</html>

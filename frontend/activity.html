@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>每日運動紀錄</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .page-title {
+      text-align: center;
+      font-size: 26px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.1fr 1.1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 20px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      margin-bottom: 8px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 8px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 10px 0;
+      border: none;
+      border-radius: 8px;
+      background: #007bff;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .btn-primary:hover {
+      background: #0056b3;
+    }
+
+    .btn-secondary {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid #007bff;
+      background: #fff;
+      color: #007bff;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 16px;
+    }
+
+    .btn-secondary:hover {
+      background: #e6f0ff;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #eef2ff;
+      color: #4f46e5;
+      margin-left: 5px;
+    }
+
+    .history-list {
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+      font-size: 14px;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-header {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .history-meta {
+      color: #666;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-title">每日運動紀錄</div>
+
+  <div class="container">
+    <!-- 左側：輸入表單 -->
+    <div class="card">
+      <h2>新增紀錄</h2>
+
+      <label for="activity_type">
+        運動種類
+      </label>
+      <select id="activity_type">
+        <option value="走路">走路</option>
+        <option value="跑步">跑步</option>
+        <option value="健身">健身</option>
+        <option value="瑜伽">瑜伽</option>
+        <option value="單車">單車</option>
+      </select>
+
+      <label for="duration">運動時間（分鐘）</label>
+      <input type="number" id="duration" placeholder="例如：30">
+
+      <label for="steps">步數（可選填）</label>
+      <input type="number" id="steps" placeholder="例如：7000">
+
+      <label for="heart_rate">心率（平均 bpm，可選填）</label>
+      <input type="number" id="heart_rate" placeholder="例如：120">
+
+      <label for="speed">速度（km/h，可選填）</label>
+      <input type="number" id="speed" placeholder="例如：6.5">
+
+      <label for="calories">
+        預估消耗卡路里
+        <span class="badge">自動計算，可修改</span>
+      </label>
+      <input type="number" id="calories" placeholder="會依運動種類與時間自動估算">
+
+      <div class="hint">
+        卡路里為粗略估算，僅供參考。
+      </div>
+
+      <button class="btn-primary" onclick="saveActivity()">儲存紀錄</button>
+
+      <button class="btn-secondary" onclick="goDashboard()">回首頁</button>
+    </div>
+
+    <!-- 右側：歷史紀錄 -->
+    <div class="card">
+      <h2>歷史紀錄</h2>
+      <div id="history" class="history-list">
+        讀取中...
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ✅ 把 SQLite 的 "YYYY-MM-DD HH:mm:ss" 當作 UTC 來解析
+  function parseSqliteUtc(utcString) {
+    if (!utcString) return null;
+    const iso = utcString.replace(" ", "T") + "Z"; // 讓 JS 明確知道是 UTC
+    return new Date(iso);
+  }
+
+  // ✅ 顯示成台灣時間（Asia/Taipei）
+  function formatTWDateTime(utcString) {
+    const d = parseSqliteUtc(utcString);
+    if (!d) return "-";
+    return d.toLocaleString("zh-TW", {
+      timeZone: "Asia/Taipei",
+      hour12: false
+    });
+  }
+
+  // 簡單 MET 表（大約值，用來估算卡路里）
+  const MET_TABLE = {
+    "走路": 3.3,
+    "跑步": 8.0,
+    "健身": 6.0,
+    "瑜伽": 3.0,
+    "單車": 6.8
+  };
+
+  // 假設平均體重 60kg 來估算（你之後可改成從健康紀錄抓最新體重）
+  const DEFAULT_WEIGHT = 60;
+
+  function estimateCalories() {
+    const type = document.getElementById("activity_type").value;
+    const duration = Number(document.getElementById("duration").value || 0);
+
+    if (!duration) return;
+
+    const met = MET_TABLE[type] || 4;
+    const hours = duration / 60;
+    const calories = Math.round(met * DEFAULT_WEIGHT * hours);
+    document.getElementById("calories").value = calories;
+  }
+
+  document.getElementById("duration").addEventListener("change", estimateCalories);
+  document.getElementById("activity_type").addEventListener("change", estimateCalories);
+
+  async function saveActivity() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("尚未登入，請先登入！");
+      return;
+    }
+
+    const activity_type = document.getElementById("activity_type").value;
+    const duration = Number(document.getElementById("duration").value);
+    const steps = Number(document.getElementById("steps").value || 0);
+    const heart_rate = Number(document.getElementById("heart_rate").value || 0);
+    const speed = Number(document.getElementById("speed").value || 0);
+    const calories = Number(document.getElementById("calories").value || 0);
+
+    if (!duration || duration <= 0) {
+      alert("請輸入運動時間！");
+      return;
+    }
+
+    const res = await fetch("/api/activity_records", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        activity_type,
+        duration,
+        steps,
+        heart_rate,
+        speed,
+        calories
+      })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+    loadHistory();
+  }
+
+  async function loadHistory() {
+    const token = localStorage.getItem("token");
+    const res = await fetch("/api/activity_records", {
+      headers: {
+        "Authorization": "Bearer " + token
+      }
+    });
+
+    const rows = await res.json();
+    const list = document.getElementById("history");
+    list.innerHTML = "";
+
+    if (!rows || rows.length === 0) {
+      list.textContent = "目前沒有紀錄";
+      return;
+    }
+
+    rows.forEach(r => {
+      const div = document.createElement("div");
+      div.className = "history-item";
+
+      const header = document.createElement("div");
+      header.className = "history-header";
+      header.textContent = `${r.activity_type}｜${r.duration} 分鐘`;
+
+      const meta = document.createElement("div");
+      meta.className = "history-meta";
+
+      // ✅ 這裡改成台灣時間顯示
+      meta.textContent =
+        `${formatTWDateTime(r.created_at)}｜步數：${r.steps}｜心率：${r.heart_rate}｜速度：${r.speed} km/h｜卡路里：約 ${r.calories}`;
+
+      div.appendChild(header);
+      div.appendChild(meta);
+      list.appendChild(div);
+    });
+  }
+
+  function goDashboard() {
+    location.href = "dashboard.html";
+  }
+
+  // 初始載入
+  loadHistory();
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>會員資料</title>
+</head>
+<body>
+
+<h2>會員資料</h2>
+
+<div id="info">讀取中...</div>
+
+<br>
+<button onclick="window.location.href='dashboard.html'">回首頁</button>
+
+<script>
+async function loadUser() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        alert("請先登入");
+        window.location.href = "login.html";
+        return;
+    }
+
+    const res = await fetch("http://localhost:3000/api/me", {
+        headers: { "Authorization": "Bearer " + token }
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+        alert(data.message);
+        window.location.href = "login.html";
+        return;
+    }
+
+    document.getElementById("info").innerHTML = `
+        <p>Email：${data.email}</p>
+        <p>顯示名稱：${data.username}</p>
+        <p>角色：${data.role}</p>
+        <p>註冊時間：${data.created_at}</p>
+    `;
+}
+
+loadUser();
+</script>
+
+</body>
+</html>
