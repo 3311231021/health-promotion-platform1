@@ -1,82 +1,168 @@
-# ProFit Health 智慧健康運動促進平台
-> **從數據追蹤到專業介入：打造全方位的健康管理生態系**
+# 🏃‍♂️ ProFit Health 智慧健康運動促進平台
 
-![Status](https://img.shields.io/badge/Status-Midterm%20Evaluation%20Passed-success)
-![Version](https://img.shields.io/badge/Version-1.1.0-blue)
-![Tech](https://img.shields.io/badge/Tech-Node.js%20%7C%20Express%20%7C%20SQLite-lightgrey)
+![ProFit Health Logo](logo.png)
 
-## ▎專題核心理念
-**ProFit Health** 是一款整合「自主運動紀錄、大數據分析、專業醫護/教練指導」的智慧化平台。我們致力於解決傳統健康 App「數據孤島」的痛點，將單純的紀錄轉化為具備專業回饋的閉環管理系統。
-
-* **紀錄 (Tracking)**：多維度生理與運動數據採集。
-* **分析 (Analysis)**：視覺化 Dashboard 趨勢判讀。
-* **回饋 (Feedback)**：專家介入機制，提供個人化任務指派與建議。
+> 從數據追蹤到專業介入  
+> 打造「紀錄 → 分析 → 回饋」的健康管理閉環
 
 ---
 
-## ▎系統核心價值
-* **數據驅動決策 (Data-driven)**：利用 BMI 趨勢與運動統計，量化健康進度。
-* **專家導向設計 (Expert-in-the-loop)**：引入專業人員角色，補足 AI 紀錄所欠缺的人性化指導。
-* **多角色協同 (Multi-tenant)**：精準權限控管，整合「使用者、專家、管理者」三方需求。
+## 📌 專案簡介
+
+ProFit Health 是一套整合「運動紀錄、健康數據分析與專業指導」的智慧健康促進平台。
+
+本系統突破傳統健康 App 僅提供紀錄功能的限制，導入「專家介入機制」，建立：
+
+👉 **紀錄（Tracking） → 分析（Analysis） → 回饋（Feedback）閉環系統**
+
+協助使用者從「被動記錄」轉變為「主動健康管理」。
 
 ---
 
-## ▎角色功能定位
+## 🎯 核心價值
 
-### 1. 一般使用者 (User) | 積極管理
-* **數據採集**：整合 GPS 軌跡追蹤、計步器與 BMI 自動計算。
-* **目標達成系統**：設定個人運動目標，透過 30 天達標率儀表板監控進度。
-* **專家諮詢**：透過內建 Q&A 功能，直接向專屬專家尋求建議。
+- 📊 **Data-driven（數據驅動）**  
+  透過 Dashboard 分析 BMI 趨勢、運動統計，量化健康進展
 
-### 2. 專業人員 (Expert) | 精準介入
-* **個案管理看板**：遠端監控多名使用者的運動與生理數據異常。
-* **個人化處方**：根據數據下達「任務指派 (Task)」與「回饋建議 (Feedback)」。
-* **互動溝通**：回覆個案諮詢，建立高黏著度的指導關係。
+- 🧑‍⚕️ **Expert-in-the-loop（專家介入）**  
+  教練 / 醫師提供個人化建議與任務指派
 
-### 3. 系統管理者 (Admin) | 營運維護
-* **智慧配對**：依據專家領域（如：減重增肌、復健、慢病管理）指派對應使用者。
-* **資源控管**：帳號生命週期管理與系統權限配置。
+- 🔁 **Closed-loop（閉環管理）**  
+  從數據 → 分析 → 行動 → 再優化
+
+- 👥 **Multi-role System（多角色系統）**  
+  整合 User / Expert / Admin 三方協作
 
 ---
 
-## ▎技術架構
-本系統採用 **前後端分離架構 (RESTful API)**，具備高度的跨平台擴充性。
+## 👥 系統角色
 
-| 組件 | 技術棧 | 說明 |
-| :--- | :--- | :--- |
-| **前端開發** | HTML5, CSS3, JS | 原生效能優化，確保流暢體驗 |
-| **後端核心** | Node.js + Express | 提供高併發處理能力 |
-| **資料庫** | SQLite | 輕量化、易於部署與攜帶 |
-| **安全驗證** | JWT (JSON Web Token) | 實現跨網域加密驗證 |
-| **數據視覺化** | Chart.js & Leaflet | 趨勢圖表與 GPS 地圖渲染 |
+### 👤 User（一般使用者）
+- 記錄運動與健康資料
+- 查看 Dashboard 分析
+- 設定目標（步數 / 時間 / 卡路里）
+- 向專家提問（Q&A）
 
 ---
 
-## ▎快速啟動 (Quick Start)
+### 🧑‍⚕️ Expert（專業人員）
+- 查看個案健康與運動資料
+- 提供回饋（Feedback）
+- 指派任務（Task）
+- 回答使用者問題
 
-### 開發者模式
+---
+
+### 🧑‍💼 Admin（管理者）
+- 建立與管理專家帳號
+- 指派專家與使用者（1對多）
+- 權限與系統管理
+
+---
+
+## 🚀 主要功能
+
+### 📱 使用者功能
+- JWT 註冊 / 登入驗證
+- 運動紀錄（時間 / 步數 / 心率 / 卡路里）
+- GPS 地圖運動（Leaflet）
+- 健康紀錄（BMI 自動計算）
+- Dashboard 視覺化分析：
+  - 今日狀態
+  - 30 天達標率
+  - 本週 / 本月統計
+  - BMI 趨勢
+
+---
+
+### 🧠 專家系統
+- 個案管理 Dashboard
+- 個人化任務指派
+- 健康數據分析
+- 即時回饋與建議
+
+---
+
+### ⚙️ 管理系統
+- 專家帳號管理
+- 專家指派機制
+- 系統權限控管
+
+---
+
+## 🏗️ 系統架構
+
+| 模組 | 技術 |
+|------|------|
+| Frontend | HTML / CSS / JavaScript |
+| Backend | Node.js + Express |
+| Database | SQLite |
+| Authentication | JWT |
+| Charts | Chart.js |
+| Map | Leaflet |
+
+👉 採用 **前後端分離架構（RESTful API）**
+
+---
+
+## ⚙️ 快速啟動
+
+### 1️⃣ 啟動後端
+
 ```bash
-# 進入後端目錄
 cd backend
-
-# 安裝依賴套件
 npm install
-
-# 啟動 API Server
 node index.js
-使用者模式
-一鍵啟動：直接執行根目錄下的 start.bat。
 
-測試環境：內建 health.db 模擬資料庫，支持三方角色直接登入。
+API：
 
-▎發展藍圖 (Roadmap)
-核心數據追蹤系統
+http://localhost:3000
+2️⃣ 開啟前端
+frontend/auth.html
 
-AI 預警系統：針對異常 BMI 自動推播警示。
+或使用 VS Code Live Server
 
-課程與金流整合：新增線上課程訂閱與支付機制。
+🚀 一鍵啟動（Windows）
 
-穿戴裝置同步：串接 Web Bluetooth API 獲取即時數據。
+執行：
 
-▎專案貢獻者
-Nancy Lee - 專題架構設計與開發
+start.bat
+
+✔ 自動啟動 backend
+✔ 開啟前端頁面
+
+🧪 測試說明
+使用 health.db 測試資料庫
+可建立 User / Expert / Admin 測試帳號
+無真實個資
+📂 專案結構
+health-promotion-platform/
+│
+├── backend/
+├── frontend/
+├── start.bat
+├── stop.bat
+├── README.md
+└── logo.png
+⭐ 專題亮點（重要！）
+✅ 多角色健康管理系統（User / Expert / Admin）
+✅ 完整前後端整合（API + DB）
+✅ 健康數據視覺化（Chart.js）
+✅ 專家互動機制（回饋 / 任務 / Q&A）
+✅ GPS + 計步整合（Leaflet）
+✅ 一鍵啟動（Batch Script）
+🎬 Demo 流程
+執行 start.bat
+開啟 auth.html
+登入系統
+查看 Dashboard
+切換角色體驗功能
+🚀 未來發展（Roadmap）
+🤖 AI 健康預警（異常偵測）
+⌚ 穿戴裝置整合（Apple Health / Mi Fitness）
+💰 課程與金流系統
+📱 行動 App（Mobile App）
+👨‍💻 作者
+
+Nancy Lee（3311231021）
+資訊管理系 專題作品
