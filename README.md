@@ -1,4 +1,4 @@
-# 🏃‍♂️ ProFit Health 智慧健康運動促進平台
+# 🏃‍♂️ ProFit Health 跨健康與運動管理之智慧健康運動促進平台
 
 ![ProFit Health Logo](logo.png)
 
