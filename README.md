@@ -1,4 +1,4 @@
-# 🏃‍♂️ ProFit Health 跨健康與運動管理之智慧健康運動促進平台
+# ProFit Health 跨健康與運動管理之智慧健康運動促進平台
 
 ![ProFit Health Logo](logo.png)
 
@@ -15,7 +15,7 @@ ProFit Health 是一套整合「運動紀錄、健康數據分析與專業指導
 
 本系統透過導入「專家介入機制」，建立：
 
-👉 **紀錄（Tracking） → 分析（Analysis） → 回饋（Feedback）閉環系統**
+**紀錄（Tracking） → 分析（Analysis） → 回饋（Feedback）閉環系統**
 
 協助使用者從「被動記錄」轉變為「主動健康管理」。
 
