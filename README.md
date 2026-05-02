@@ -197,7 +197,7 @@ health-promotion-platform/
 ## 🚀 未來發展（Roadmap）
 
 🤖 AI 健康預警（異常偵測）
-⌚ 穿戴裝置及測量值整合（Mi Fitness / Omron Cloud API / Apple HealthKit / Google Fit API ）
+⌚ 穿戴裝置及測量值整合（Mi Fitness / Omron Cloud API / Apple HealthKit / Google Fit API 等 ）
 💰 課程與金流系統
 📱 行動 App（Mobile App）
 
